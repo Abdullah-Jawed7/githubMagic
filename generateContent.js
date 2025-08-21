@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { runner } from "./config.js";
 import { Agent } from "@openai/agents";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function generatePortfolioUpdate({ repo, branch, commits }) {
   const commitText = commits.map(c => `- ${c.message} (${c.author})`).join("\n");
