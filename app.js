@@ -6,7 +6,7 @@ const app = express();
 
 // Only this route needs raw body because we must compute HMAC of raw bytes
 app.post(
-  "/webhooks/github",
+  "/github-webhook",
   express.raw({ type: "application/json" }), // gives us raw Buffer in req.body
   async (req, res) => {
     const secret = process.env.GITHUB_WEBHOOK_SECRET || "";
