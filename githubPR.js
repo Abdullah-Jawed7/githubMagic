@@ -1,10 +1,11 @@
 import { Octokit } from "@octokit/rest";
 import { v4 as uuidv4 } from "uuid";
+import { github_token, portfolio_repo } from "./env.js"
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const octokit = new Octokit({ auth: github_token });
 
 export async function createPortfolioPR({ content, repo, branch }) {
-  const [owner, portfolioRepo] = process.env.PORTFOLIO_REPO.split("/");
+  const [owner, portfolioRepo] = portfolio_repo.split("/");
 
   const newBranch = `auto-update-${uuidv4().slice(0, 8)}`;
   const path = `content/updates/${Date.now()}.md`;
