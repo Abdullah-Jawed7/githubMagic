@@ -1,60 +1,59 @@
-// server.js
+// webhook.js (JavaScript)
 import express from "express";
 import crypto from "crypto";
-// import { enqueueJob } from "./worker.js"; // any queue; or call directly
 
 const app = express();
-// app.use(express.json())
-// IMPORTANT: to verify HMAC you need the *raw* body
-app.use("/github-webhook", express.raw({ type: "*/*" }));
 
-// function verifyGithubSig(req, secret) {
-//   const sig256 = req.get("X-Hub-Signature-256") || "";
-//   const their = Buffer.from(sig256.replace("sha256=", ""), "hex");
-//   const hmac = crypto.createHmac("sha256", secret);
-//   hmac.update(req.body);
-//   const ours = Buffer.from(hmac.digest("hex"), "hex");
-//   return their.length === ours.length && crypto.timingSafeEqual(their, ours);
-// }
+// Only this route needs raw body because we must compute HMAC of raw bytes
+app.post(
+  "/github-webhook",
+  express.raw({ type: "application/json" }), // gives us raw Buffer in req.body
+  async (req, res) => {
+    const secret = process.env.GITHUB_WEBHOOK_SECRET || "";
+    const sigHeader = req.headers["x-hub-signature-256"] || "";
+    const event = req.headers["x-github-event"] || "";
+    const deliveryId = req.headers["x-github-delivery"] || "";
 
-// app.post("/webhooks/github", async (req, res) => {
-//   if (!verifyGithubSig(req, process.env.GITHUB_WEBHOOK_SECRET)) {
-//     return res.status(403).send("Bad signature");
-//   }
-//   const event = req.get("X-GitHub-Event");
-//   if (event !== "push") return res.status(204).end();
+    // 1) Quick checks
+    if (!sigHeader) {
+      console.warn("No signature header (are you using a secret?)");
+      return res.status(400).send("No signature");
+    }
+    if (event !== "push") {
+      // we only handle push for now
+      return res.status(204).end(); // nothing to do
+    }
 
-//   const delivery = req.get("X-GitHub-Delivery"); // idempotency key
-//   const payload = JSON.parse(req.body.toString("utf8"));
-//   await enqueueJob({ delivery, payload }); // or processJob({ ... })
-//   res.status(200).end(); // ACK fast
-// });
+    // 2) Verify signature (sha256)
+    try {
+      const body = req.body; // raw Buffer
+      const hmac = crypto.createHmac("sha256", secret);
+      hmac.update(body);
+      const digest = `sha256=${hmac.digest("hex")}`;
 
-app.post("/github-webhook", async (req, res) => {
-  const commitMsg = req.body?.head_commit?.message;
-  console.log(commitMsg)
-console.log(req.body)
+      // timing-safe compare
+      const a = Buffer.from(digest, "utf8");
+      const b = Buffer.from(sigHeader, "utf8");
+      if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+        console.warn("Invalid signature");
+        return res.status(403).send("Invalid signature");
+      }
+    } catch (err) {
+      console.error("Signature verification error:", err);
+      return res.status(500).send("Verification error");
+    }
 
-//   const response = await client.beta.agents.sessions.create({
-//     agent_id: summarizerAgent.id,
-//     input: `Commit: ${commitMsg}`,
-//   });
+    // 3) Parse JSON safely (we already have raw body)
+    const payload = JSON.parse(req.body.toString("utf8"));
 
-//   const summary = response.output[0].content[0].text;
-//   console.log("Draft update:", summary);
+    // 4) ACK fast and enqueue/process later
+    // Example minimal: insert into DB or push to a queue
+    // db.collection('pending_updates').insertOne({ deliveryId, payload, status: 'pending' });
 
-//   // Save draft in Mongo with status = "pending"
-//   await db.collection("updates").insertOne({
-//     commit: commitMsg,
-//     draft: summary,
-//     status: "pending",
-//   });
+    console.log("Received push for repo:", payload.repository?.full_name, "delivery:", deliveryId);
 
-  res.status(200).json(req.body);
-});
+    res.status(200).send("Received"); // quick ACK
+  }
+);
 
-if (false) {
-    app.listen(process.env.PORT || 3000);
-}
-
-export default app;
+app.listen(3000, () => console.log("Listening on :3000"));
