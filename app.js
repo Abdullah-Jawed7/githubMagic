@@ -3,6 +3,7 @@ import { verifySignature } from "./verifySignature.js";
 import { extractCommitData } from "./extractCommit.js";
 import { generatePortfolioUpdate } from "./generateContent.js";
 import { createPortfolioPR } from "./githubPR.js";
+import { github_webhook_secret } from "./env.js";
 
 const app = express();
 
@@ -10,7 +11,7 @@ app.post(
   "/github-webhook",
   express.raw({ type: "application/json" }),
   async (req, res) => {
-    const secret = process.env.GITHUB_WEBHOOK_SECRET || "";
+    const secret = github_webhook_secret || "";
     const sigHeader = req.headers["x-hub-signature-256"] || "";
     const event = req.headers["x-github-event"] || "";
 
