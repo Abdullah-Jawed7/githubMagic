@@ -30,8 +30,9 @@ const app = express();
 // });
 
 app.post("/github-webhook", async (req, res) => {
-  const commitMsg = req.body.head_commit?.message;
+  const commitMsg = req.body?.head_commit?.message;
   console.log(commitMsg)
+console.log(req.body)
 
 //   const response = await client.beta.agents.sessions.create({
 //     agent_id: summarizerAgent.id,
@@ -48,7 +49,7 @@ app.post("/github-webhook", async (req, res) => {
 //     status: "pending",
 //   });
 
-  res.status(200).json(commitMsg);
+  res.status(200).json(req.body);
 });
 
 if (false) {
