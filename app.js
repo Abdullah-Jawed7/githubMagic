@@ -1,7 +1,7 @@
 // server.js
 import express from "express";
 import crypto from "crypto";
-import { enqueueJob } from "./worker.js"; // any queue; or call directly
+// import { enqueueJob } from "./worker.js"; // any queue; or call directly
 
 const app = express();
 // IMPORTANT: to verify HMAC you need the *raw* body
