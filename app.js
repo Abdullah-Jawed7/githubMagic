@@ -4,7 +4,7 @@ import crypto from "crypto";
 // import { enqueueJob } from "./worker.js"; // any queue; or call directly
 
 const app = express();
-app.use(express.json())
+// app.use(express.json())
 // IMPORTANT: to verify HMAC you need the *raw* body
 app.use("/github-webhook", express.raw({ type: "*/*" }));
 
