@@ -1,5 +1,6 @@
 // agents/portfolioEditor.js
 import { Agent } from "@openai/agents";
+import { runner } from "../../config.js";
 
 export async function editPortfolio(update, fileContent, filePath) {
   const instructions = `
