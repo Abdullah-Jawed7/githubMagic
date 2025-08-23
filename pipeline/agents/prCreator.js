@@ -1,11 +1,11 @@
 // agents/prCreator.js
 import { Octokit } from "@octokit/rest";
-import { github_token } from "../../env.js";
+import { github_token, portfolio_repo } from "../../env.js";
 
 const octokit = new Octokit({ auth: github_token });
 export async function createPR(update, repo, branchName, filePath, newContent) {
 
-  const [owner, repoName] = repo.split("/");
+  const [owner, repoName] = portfolio_repo.split("/");
 
   // 1. Get default branch (usually "main")
   const { data: repoData } = await octokit.repos.get({ owner, repo: repoName });
@@ -59,7 +59,7 @@ export async function createPR(update, repo, branchName, filePath, newContent) {
 
 
 export async function getFileContent(repoFull, branch, filePath) {
-  const [owner, repo] = repoFull.split("/");
+  const [owner, repo] = portfolio_repo.split("/");
   const { data } = await octokit.repos.getContent({
     owner,
     repo,
