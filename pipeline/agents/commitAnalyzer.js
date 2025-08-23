@@ -27,8 +27,8 @@ ${commitDiff}
   const AnalyzerResultType = z.object({
   type: z.string(),
   description: z.string(),
-  link:z.array(z.string()).optional(),
-  skills: z.array(z.string()).optional(),
+  link:z.array(z.string()).nullable(),
+  skills: z.array(z.string()).nullable(),
 });
 
 const commitAnalyzer = new Agent({
