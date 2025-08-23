@@ -32,6 +32,7 @@ app.post(
 
     // Step 1: Analyze commit
     const update = await analyzeCommit(commit.message, commit.diff || "");
+    console.log("Step 1 Completed")
 
     // Step 2: Pick file path
     let filePath = "";
@@ -39,12 +40,15 @@ app.post(
     if (update.type === "skill update") filePath = "src/Components/Skill.jsx";
     if (update.type === "education update") filePath = "src/Components/Edu.jsx";
     if (update.type === "bio update") filePath = "src/Components/About.jsx";
+       console.log("Step 2 Completed")
 
     // Step 3: Load current file content from Github
     const fileContent = await getFileContent(repoFull, baseBranch, filePath);
+       console.log("Step 3 Completed")
 
     // Step 4: Let AI edit
     const newContent = await editPortfolio(update, fileContent, filePath);
+       console.log("Step 4 Completed")
 
     // Step 5: Create PR
     const prUrl = await createPR(
@@ -54,6 +58,7 @@ app.post(
       filePath,
       newContent
     );
+       console.log("Step 5 Completed")
 
     console.log("PR created:", prUrl);
 
